@@ -1,26 +1,25 @@
 import * as functions from "firebase-functions";
 import * as backendServices from "../../z-tools/marslab-library-cloud-function/services/backend";
 import { dataServices as objectDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
-import * as authServices from "../../z-tools/marslab-library-cloud-function/services/auth";
-import { user as object } from "../../z-tools/marslab-library-cloud-function/system/objectsConfig";
+import { bookmark as object } from "../../z-tools/system/objectsConfig";
 
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
 
-const objectName = "user";
+const objectName = "bookmark";
 const event = "Update";
 let objectId = null;
-let uid = null;
 
 export default functions.https.onCall(async (data, context) => {
   try {
     //Validate Permission
-    uid = context.auth.uid;
-    console.log(uid);
+    const uid = context.auth.uid;
+    await backendServices.permission.identityChecking({ uid });
+
     //Data Correction
     data = {
       ...data,
     };
-
+    console.log("data: " + JSON.stringify(data));
     //Validate Data
     const referenceData = object.attributes({});
     backendServices.data.validation({
@@ -28,53 +27,46 @@ export default functions.https.onCall(async (data, context) => {
       reference: referenceData.receivableState,
     });
 
+    //validation
+    // if(data.endTime < objectDataServices.Time.now()){
+    //   backendServices.data.unavailable({
+    //     message: `End time cannot before current time.`,
+    //   });
+    // }
+
+    // if(data.ended.boolean){
+    //   delete data["startTime"];
+    //   delete data["endTime"];
+    // }
+
     //Data Processing
     const objectData = object.attributes(data).manualUpdatableState;
 
     //Output
-    const { email, displayName, photoURL } = data;
-
-    //Auth
-    const updateAuth = await authServices
-      .updateUser(uid, {
-        email,
-        displayName,
-        photoURL,
-      })
-      .catch((error) => {
-        backendServices.data.invalidArgument({ message: error.errorInfo.message });
-      });
-    console.log("objectId: " + typeof uid);
-    //Database
-    const updateDatabase = await objectDataServices.update({
+    const result = await objectDataServices.update({
       objectName,
-      objectId: uid,
+      objectId: data.id,
       objectData,
       updatedByUid: uid,
     });
 
-    await Promise.all([updateAuth, updateDatabase]);
+    objectId = result.objectId;
 
     return httpUtils.successResponse({
       objectName,
-      ids: [uid],
+      ids: [objectId],
       action: event,
       message: `Update ${objectName} successfully.`,
     });
   } catch (error) {
-    let { code, message } = error;
-
-    if (error.errorInfo) {
-      code = error.errorInfo.code;
-      message = error.errorInfo.message;
-    }
+    const { code, message } = error;
 
     console.log(error);
 
     httpUtils.failedResponse({
       code: code,
       objectName,
-      ids: [uid],
+      ids: [objectId],
       action: event,
       message: message,
     });

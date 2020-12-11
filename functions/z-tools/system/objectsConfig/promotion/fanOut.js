@@ -1,5 +1,5 @@
-export default function fanOut(){
-    const fanOutTargerObjectArray = ["shop"]
+export default function fanOut() {
+  const fanOutTargerObjectArray = ["shop", "bookmark"];
 
-    return fanOutTargerObjectArray;
+  return fanOutTargerObjectArray;
 }

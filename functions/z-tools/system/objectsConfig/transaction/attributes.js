@@ -37,8 +37,8 @@ export default function attributes({
     mission,
     shop,
     user,
-    paymentType : payment.paymentType,
-    paymentId :payment.paymentId,
+    paymentType: payment.paymentType,
+    paymentId: payment.paymentId,
     approved,
     rejected,
 
@@ -81,6 +81,6 @@ export default function attributes({
     confidential,
     receivableState,
     approveObjectState,
-    rejectObjectState
+    rejectObjectState,
   };
 }

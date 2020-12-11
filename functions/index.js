@@ -4,7 +4,7 @@ const { firebaseConfig, serviceAccount } = require("./z-tools/settings/api/confi
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  ...firebaseConfig
+  ...firebaseConfig,
 });
 
 loadFunctions(__dirname, exports);

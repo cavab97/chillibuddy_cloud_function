@@ -1,5 +1,5 @@
 import * as shop from "./shop";
-import * as shopPost from "./shopPost"
+import * as shopPost from "./shopPost";
 import * as promotion from "./promotion";
 import * as routeGroup from "./routeGroup";
 import * as route from "./route";
@@ -12,6 +12,7 @@ import * as user from "./user";
 import * as settingInfo from "./setting/info";
 import * as covid19NameList from "./covid19NameList";
 import * as covid19Shop from "./covid19Shop";
+import * as bookmark from "./bookmark";
 
 export {
   user,
@@ -28,4 +29,5 @@ export {
   settingInfo,
   covid19NameList,
   covid19Shop,
+  bookmark,
 };

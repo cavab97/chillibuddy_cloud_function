@@ -62,7 +62,7 @@ export default function attributes({
       ended,
       shopIds,
       shop,
-      deleted
+      deleted,
     },
     l: shop.l,
     g: shop.g,
