@@ -15,6 +15,7 @@ const event = "Delete";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("delete");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -22,26 +23,26 @@ export default functions.https.onCall(async (data, context) => {
 
     const deleted = {
       ["d.deleted"]: {
-            at: time.now(),
-            by: uid,
-      }
-    }
+        at: time.now(),
+        by: uid,
+      },
+    };
 
     //Output
     const result = await objectDataServices.remove({
       objectName,
       objectId: data.id,
       deletedByUid: uid,
-      additionUpdate: deleted
+      additionUpdate: deleted,
     });
 
-    objectId = result.objectId
+    objectId = result.objectId;
 
     return httpUtils.successResponse({
       objectName,
       ids: [objectId],
       action: event,
-      message: `Delete ${objectName} successfully.`
+      message: `Delete ${objectName} successfully.`,
     });
   } catch (error) {
     const { code, message } = error;
@@ -53,7 +54,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

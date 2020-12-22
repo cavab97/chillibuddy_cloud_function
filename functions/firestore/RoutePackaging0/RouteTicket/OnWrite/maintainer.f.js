@@ -9,74 +9,66 @@ const targetName = "routeTicket";
 
 export default functions
   .region("asia-east2")
-  .firestore.document(
-    `${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`
-  )
+  .firestore.document(`${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`)
   .onWrite(async (snap, context) => {
+    console.log("route routeTicketMaintainer.f.js");
+
     try {
       const { objectId, targetId } = context.params;
       const functionEventId = context.eventId;
 
       return objectDataServices.db.runTransaction((transaction) => {
-        const objectRef = objectDataServices.db.doc(
-          `${objectName}Private0/${objectId}`
-        );
+        const objectRef = objectDataServices.db.doc(`${objectName}Private0/${objectId}`);
 
-        const routeTicketRef = objectDataServices.db.doc(
-          `routeTicketPrivate0/${targetId}`
-        );
+        const routeTicketRef = objectDataServices.db.doc(`routeTicketPrivate0/${targetId}`);
 
-        const idempotentRef = objectDataServices.db.doc(
-          `log/function/eventId/${functionEventId}`
-        );
+        const idempotentRef = objectDataServices.db.doc(`log/function/eventId/${functionEventId}`);
 
-        return transaction
-          .getAll(objectRef, idempotentRef, routeTicketRef)
-          .then(async (docs) => {
-            const object = docs[0];
-            const idempotent = docs[1];
-            const routeTicket = docs[2].data();
+        return transaction.getAll(objectRef, idempotentRef, routeTicketRef).then(async (docs) => {
+          const object = docs[0];
+          const idempotent = docs[1];
+          const routeTicket = docs[2].data();
 
-            if (!object.exists) {
-              throw Object("Object does not exist!");
-            }
+          if (!object.exists) {
+            throw Object("Object does not exist!");
+          }
 
-            if (idempotent.exists) {
-              return console.log("Function trigger repeatly.");
-            }
+          if (idempotent.exists) {
+            return console.log("Function trigger repeatly.");
+          }
 
-            let {
+          let {
+            currentUser,
+            totalMissions,
+            assignedRewards,
+            totalRewards,
+            minimumUser,
+            ended,
+          } = object.data();
+
+          const uid = snap.after.data().userIds[0];
+
+          //increase user counter
+          if (!snap.before.exists) {
+            currentUser = ++currentUser;
+            transaction.update(objectRef, {
               currentUser,
-              totalMissions,
-              assignedRewards,
-              totalRewards,
-              minimumUser,
-              ended,
-            } = object.data();
+            });
 
-            const uid = snap.after.data().userIds[0];
-
-            //increase user counter
-            if (!snap.before.exists) {
-              currentUser = ++currentUser;
+            if (currentUser === minimumUser) {
+              const ongoing = {
+                at: objectDataServices.Time.now(),
+                by: uid,
+                boolean: true,
+              };
               transaction.update(objectRef, {
-                currentUser,
+                ongoing,
               });
-
-              if (currentUser === minimumUser) {
-                const ongoing = {
-                  at: objectDataServices.Time.now(),
-                  by: uid,
-                  boolean: true,
-                };
-                transaction.update(objectRef, {
-                  ongoing,
-                });
-              }
             }
+          }
 
-            //assign reward
-            /* if (
+          //assign reward
+          /* if (
               snap.before.exists &&
               !ended.boolean &&
               snap.after.data().numberCompletedMissions !==
@@ -132,10 +124,10 @@ export default functions
               }
             } */
 
-            return transaction.set(idempotentRef, {
-              actived: { at: objectDataServices.Time.now() },
-            });
+          return transaction.set(idempotentRef, {
+            actived: { at: objectDataServices.Time.now() },
           });
+        });
       });
     } catch (error) {
       return console.error(error);

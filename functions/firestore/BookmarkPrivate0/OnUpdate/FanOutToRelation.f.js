@@ -8,6 +8,7 @@ export default functions
   .region("asia-east2")
   .firestore.document(`${objectName}Private0/{id}`)
   .onUpdate((snap, context) => {
+    console.log("bookmarkFanOutToRelation.f.js");
     try {
       const objectId = context.params.id;
       const objectBeforeData = snap.before.data();

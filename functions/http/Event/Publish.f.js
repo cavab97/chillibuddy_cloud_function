@@ -10,6 +10,7 @@ const event = "Publish";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("publish");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -19,7 +20,7 @@ export default functions.https.onCall(async (data, context) => {
       published: {
         at: objectDataServices.Time.now(),
         by: uid,
-        boolean:true
+        boolean: true,
       },
     };
 

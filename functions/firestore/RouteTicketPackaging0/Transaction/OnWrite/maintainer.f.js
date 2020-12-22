@@ -4,22 +4,19 @@ import { dataServices as objectDataServices } from "../../../../z-tools/marslab-
 const objectName = "routeTicket";
 const targetName = "transaction";
 
-export default functions.region("asia-east2").firestore
-  .document(
-    `${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`
-  )
+export default functions
+  .region("asia-east2")
+  .firestore.document(`${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`)
   .onWrite(async (snap, context) => {
+    console.log("routeTicket transactionMaintainer.f.js");
+
     try {
       const objectId = context.params.objectId;
       const functionEventId = context.eventId;
 
       return await objectDataServices.db.runTransaction((transaction) => {
-        const objectRef = objectDataServices.db.doc(
-          `${objectName}Private0/${objectId}`
-        );
-        const idempotentRef = objectDataServices.db.doc(
-          `log/function/eventId/${functionEventId}`
-        );
+        const objectRef = objectDataServices.db.doc(`${objectName}Private0/${objectId}`);
+        const idempotentRef = objectDataServices.db.doc(`log/function/eventId/${functionEventId}`);
 
         return transaction.getAll(objectRef, idempotentRef).then((docs) => {
           const object = docs[0];
@@ -35,7 +32,7 @@ export default functions.region("asia-east2").firestore
           let {
             completedMissions = [],
             numberCompletedMissions,
-            numberApprovedMission
+            numberApprovedMission,
           } = object.data();
 
           if (!snap.before.exists) {
@@ -57,9 +54,9 @@ export default functions.region("asia-east2").firestore
             snap.before.data().approved.at === null &&
             snap.after.data().approved.at !== null
           ) {
-            numberApprovedMission = ++numberApprovedMission
+            numberApprovedMission = ++numberApprovedMission;
             transaction.update(objectRef, {
-              numberApprovedMission
+              numberApprovedMission,
             });
           }
 

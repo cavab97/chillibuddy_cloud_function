@@ -10,17 +10,18 @@ const event = "Reject";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("reject");
   try {
     //Validate Permission
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
-    const rejectData =
-      {
-        rejected : { 
-          at: objectDataServices.Time.now(), 
-          by: uid },
-      }
+    const rejectData = {
+      rejected: {
+        at: objectDataServices.Time.now(),
+        by: uid,
+      },
+    };
 
     //Data Processing
     const objectData = object.attributes(rejectData).rejectObjectState;

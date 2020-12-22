@@ -1,11 +1,7 @@
 import * as functions from "firebase-functions";
 import * as backendServices from "../../z-tools/marslab-library-cloud-function/services/backend";
 import { dataServices as objectDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
-import {
-  reward as object,
-  route,
-  event,
-} from "../../z-tools/system/objectsConfig";
+import { reward as object, route, event } from "../../z-tools/system/objectsConfig";
 
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
 
@@ -18,6 +14,7 @@ let objectIds = null;
 let objectQty = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("create");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -45,7 +42,7 @@ export default functions.https.onCall(async (data, context) => {
       });
     }
 
-    if(data.quantity > 70){
+    if (data.quantity > 70) {
       backendServices.data.invalidArgument({
         message: "Reward quantity cannot more than 70.",
       });
@@ -53,7 +50,7 @@ export default functions.https.onCall(async (data, context) => {
 
     objectQty = data.quantity;
     delete data["quantity"];
-    
+
     //Data Correction
     data = {
       ...data,
@@ -78,11 +75,11 @@ export default functions.https.onCall(async (data, context) => {
       .where("deleted.by", "==", null)
       .where("rank", "==", data.rank)
       .get();
-    
-    const readPromise = await Promise.all([readSubject, readExist])
 
-    const subjectData = readPromise[0]
-    const rankExisted = readPromise[1]
+    const readPromise = await Promise.all([readSubject, readExist]);
+
+    const subjectData = readPromise[0];
+    const rankExisted = readPromise[1];
 
     //validate
     if (rankExisted.docs[0] && rankExisted.docs[0].exists) {
@@ -91,7 +88,7 @@ export default functions.https.onCall(async (data, context) => {
       });
     }
 
-    if(subjectData[0].published.boolean){
+    if (subjectData[0].published.boolean) {
       backendServices.data.unavailable({
         message: `Can't add new reward after the ${subjectName} published.`,
       });
@@ -99,21 +96,19 @@ export default functions.https.onCall(async (data, context) => {
 
     const objectsArray = [];
 
-    for(let i = 0; i < objectQty; i++){
+    for (let i = 0; i < objectQty; i++) {
       //Data Processing
-      const objectData = object.attributes({...data, [subjectName]:subjectData});
+      const objectData = object.attributes({ ...data, [subjectName]: subjectData });
 
-      const subjectObjectRelation = subject.relation[
-        subjectName
-      ].create.reward.asChild({
+      const subjectObjectRelation = subject.relation[subjectName].create.reward.asChild({
         subjectName,
         subjectIds,
       });
 
-      objectsArray.push({ 
-        packaging: objectData.packaging, 
-        shared: objectData.shared, 
-        confidential: objectData.confidential, 
+      objectsArray.push({
+        packaging: objectData.packaging,
+        shared: objectData.shared,
+        confidential: objectData.confidential,
         subjectObjectRelation,
       });
 

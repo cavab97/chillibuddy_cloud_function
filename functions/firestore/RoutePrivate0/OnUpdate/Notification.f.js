@@ -11,9 +11,12 @@ import {
 const objectName = "route";
 const targetName = "notification";
 
-export default functions.region("asia-east2").firestore
-  .document(`${objectName}Private0/{objectId}`)
+export default functions
+  .region("asia-east2")
+  .firestore.document(`${objectName}Private0/{objectId}`)
   .onUpdate(async (snap, context) => {
+    console.log("route notification.f.js");
+
     try {
       const { objectId } = context.params;
       const functionEventId = context.eventId;
@@ -22,10 +25,7 @@ export default functions.region("asia-east2").firestore
       let userIds = [];
 
       //Create notification for everyone when route published
-      if (
-        snap.before.data().published.at === null &&
-        snap.after.data().published.at !== null
-      ) {
+      if (snap.before.data().published.at === null && snap.after.data().published.at !== null) {
         data = {
           userListRef: `userPrivate0`,
           data: {
@@ -42,12 +42,10 @@ export default functions.region("asia-east2").firestore
         //Data Processing
         targetData = target.attributes(data);
 
-        const subjectObjectRelation = object.relation.route.create.notification.toUser(
-          {
-            objectName,
-            objectIds: [objectId],
-          }
-        );
+        const subjectObjectRelation = object.relation.route.create.notification.toUser({
+          objectName,
+          objectIds: [objectId],
+        });
 
         return targetDataServices.createWithRelation({
           objectName: targetName,
@@ -65,10 +63,7 @@ export default functions.region("asia-east2").firestore
       }
 
       //Create notification when event start
-      if (
-        snap.before.data().ongoing.at === null &&
-        snap.after.data().ongoing.at !== null
-      ) {
+      if (snap.before.data().ongoing.at === null && snap.after.data().ongoing.at !== null) {
         userIds = await getRouteTicketHolderIds(objectId);
         data = {
           userListRef: null,
@@ -87,12 +82,10 @@ export default functions.region("asia-east2").firestore
         //Data Processing
         targetData = target.attributes(data);
 
-        const subjectObjectRelation = object.relation.route.create.notification.toUser(
-          {
-            objectName,
-            objectIds: [objectId],
-          }
-        );
+        const subjectObjectRelation = object.relation.route.create.notification.toUser({
+          objectName,
+          objectIds: [objectId],
+        });
 
         return targetDataServices.createWithRelation({
           objectName: targetName,
@@ -132,12 +125,10 @@ export default functions.region("asia-east2").firestore
         //Data Processing
         targetData = target.attributes(data);
 
-        const subjectObjectRelation = object.relation.route.create.notification.toUser(
-          {
-            objectName,
-            objectIds: [objectId],
-          }
-        );
+        const subjectObjectRelation = object.relation.route.create.notification.toUser({
+          objectName,
+          objectIds: [objectId],
+        });
 
         return targetDataServices.createWithRelation({
           objectName: targetName,

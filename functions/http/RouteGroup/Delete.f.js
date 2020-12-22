@@ -10,34 +10,34 @@ const event = "Delete";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("delete");
   try {
     //Validate Permission
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
     //read other object
-    const routeGroups = await objectDataServices.read({objectName, objectIds: [data.id]})
-    const routeGroup = routeGroups[0]
+    const routeGroups = await objectDataServices.read({ objectName, objectIds: [data.id] });
+    const routeGroup = routeGroups[0];
 
-
-    if(routeGroup.d.totalRoutes > 0){
-      backendServices.data.invalidArgument({message:"content unterminated route."})
+    if (routeGroup.d.totalRoutes > 0) {
+      backendServices.data.invalidArgument({ message: "content unterminated route." });
     }
 
     //Output
     const result = await objectDataServices.remove({
       objectName,
       objectId: data.id,
-      deletedByUid: uid
+      deletedByUid: uid,
     });
 
-    objectId = result.objectId
+    objectId = result.objectId;
 
     return httpUtils.successResponse({
       objectName,
       ids: [objectId],
       action: event,
-      message: `Delete ${objectName} successfully.`
+      message: `Delete ${objectName} successfully.`,
     });
   } catch (error) {
     const { code, message } = error;
@@ -49,7 +49,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

@@ -1,16 +1,15 @@
 import * as functions from "firebase-functions";
-import {
-  reward as object,
-  routeTicket,
-  user,
-} from "../../../z-tools/system/objectsConfig";
+import { reward as object, routeTicket, user } from "../../../z-tools/system/objectsConfig";
 import { dataServices as objectDataServices } from "../../../z-tools/marslab-library-cloud-function/services/database";
 
 const objectName = "reward";
 
-export default functions.region("asia-east2").firestore
-  .document(`${objectName}Private0/{${objectName}Id}`)
+export default functions
+  .region("asia-east2")
+  .firestore.document(`${objectName}Private0/{${objectName}Id}`)
   .onUpdate(async (snap, context) => {
+    console.log("reward FanOutToRelation.f.js");
+
     try {
       const objectId = snap.after.id;
 
@@ -30,8 +29,7 @@ export default functions.region("asia-east2").firestore
       });
 
       if (snap.before.data().obtained.at !== snap.after.data().obtained.at) {
-        const rewardBelong =
-          snap.after.data().routeIds.length > 0 ? "route" : "event";
+        const rewardBelong = snap.after.data().routeIds.length > 0 ? "route" : "event";
 
         if (rewardBelong === "route") {
           return objectDataServices.createRelation({
@@ -41,14 +39,12 @@ export default functions.region("asia-east2").firestore
             objectIds: [objectId],
             directObjectName: "user",
             directObjectIds: snap.after.data().userIds,
-            subjectObjectRelation: routeTicket.relation.routeTicket.obtained.reward.toUser(
-              {
-                subjectName: "routeTicket",
-                subjectIds: snap.after.data().routeIds,
-                directObjectName: "user",
-                directObjectIds: snap.after.data().userIds,
-              }
-            ),
+            subjectObjectRelation: routeTicket.relation.routeTicket.obtained.reward.toUser({
+              subjectName: "routeTicket",
+              subjectIds: snap.after.data().routeIds,
+              directObjectName: "user",
+              directObjectIds: snap.after.data().userIds,
+            }),
           });
         }
         if (rewardBelong === "event") {
@@ -65,8 +61,7 @@ export default functions.region("asia-east2").firestore
         }
       }
 
-      return null
-      
+      return null;
     } catch (error) {
       return console.error(error);
     }

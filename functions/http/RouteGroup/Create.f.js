@@ -10,22 +10,23 @@ const event = "Create";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("create");
   try {
     //Validate Permission
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
     //Data Correction
-    data = { 
-      ...data, 
-      l: objectDataServices.GeoPoint( data.l._lat, data.l._long ),
-    }
-    
+    data = {
+      ...data,
+      l: objectDataServices.GeoPoint(data.l._lat, data.l._long),
+    };
+
     //Validate Data
     const referenceData = object.attributes({});
     backendServices.data.validation({
       target: data,
-      reference: referenceData.receivableState
+      reference: referenceData.receivableState,
     });
 
     //Data Processing
@@ -35,16 +36,16 @@ export default functions.https.onCall(async (data, context) => {
     const result = await objectDataServices.create({
       objectName,
       objectData,
-      createdByUid: uid
+      createdByUid: uid,
     });
 
-    objectId = result.objectId
+    objectId = result.objectId;
 
     return httpUtils.successResponse({
       objectName,
       ids: [objectId],
       action: event,
-      message: `Created ${objectName} successfully.`
+      message: `Created ${objectName} successfully.`,
     });
   } catch (error) {
     const { code, message } = error;
@@ -56,7 +57,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

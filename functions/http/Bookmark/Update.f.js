@@ -10,6 +10,8 @@ const event = "Update";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("update");
+
   try {
     //Validate Permission
     const uid = context.auth.uid;

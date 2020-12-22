@@ -4,22 +4,19 @@ import { dataServices as objectDataServices } from "../../../../z-tools/marslab-
 const objectName = "shop";
 const targetName = "promotion";
 
-export default functions.region("asia-east2").firestore
-  .document(
-    `${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`
-  )
+export default functions
+  .region("asia-east2")
+  .firestore.document(`${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`)
   .onWrite(async (snap, context) => {
+    console.log("shopPackaging promotionMaintainer.f.js");
+
     try {
       const { objectId } = context.params;
       const functionEventId = context.eventId;
 
       return await objectDataServices.db.runTransaction((transaction) => {
-        const objectRef = objectDataServices.db.doc(
-          `${objectName}Private0/${objectId}`
-        );
-        const idempotentRef = objectDataServices.db.doc(
-          `log/function/eventId/${functionEventId}`
-        );
+        const objectRef = objectDataServices.db.doc(`${objectName}Private0/${objectId}`);
+        const idempotentRef = objectDataServices.db.doc(`log/function/eventId/${functionEventId}`);
 
         return transaction.getAll(objectRef, idempotentRef).then(async (docs) => {
           const object = docs[0];
@@ -32,17 +29,16 @@ export default functions.region("asia-east2").firestore
           if (idempotent.exists) {
             return console.log("Function trigger repeatly.");
           }
-          
+
           let { isPromote } = object.data().d;
           const timeNow = objectDataServices.Time.now();
 
-          if(isPromote === undefined)
-            isPromote = false;
+          if (isPromote === undefined) isPromote = false;
 
           if (
             snap.before.exists &&
-            isPromote === false && 
-            snap.before.data().d.started !== snap.after.data().d.started && 
+            isPromote === false &&
+            snap.before.data().d.started !== snap.after.data().d.started &&
             snap.after.data().d.started.boolean
           ) {
             isPromote = true;
@@ -52,17 +48,12 @@ export default functions.region("asia-east2").firestore
           }
 
           if (
-            snap.before.exists && 
+            snap.before.exists &&
             isPromote === true &&
-            (
-              (
-                snap.before.data().d.ended !== snap.after.data().d.ended && 
-                snap.after.data().d.ended.at !== null
-              ) || (
-                snap.before.data().d.deleted !== snap.after.data().d.deleted && 
-                snap.after.data().d.deleted.at !== null
-              )
-            )
+            ((snap.before.data().d.ended !== snap.after.data().d.ended &&
+              snap.after.data().d.ended.at !== null) ||
+              (snap.before.data().d.deleted !== snap.after.data().d.deleted &&
+                snap.after.data().d.deleted.at !== null))
           ) {
             const targetSnapShot = await objectDataServices.db
               .collection(`${objectName}Packaging0/${objectId}/${targetName}Packaging0`)
@@ -77,7 +68,7 @@ export default functions.region("asia-east2").firestore
               promotionIds.push(promotionId);
             });
 
-            if(promotionIds.length === 0){
+            if (promotionIds.length === 0) {
               isPromote = false;
               transaction.update(objectRef, {
                 ["d.isPromote"]: isPromote,

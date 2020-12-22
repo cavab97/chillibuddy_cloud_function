@@ -10,6 +10,8 @@ const objectId = "info";
 const event = "Update";
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("update");
+
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -35,7 +37,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       objectId,
       objectData,
-      createdByUid: uid
+      createdByUid: uid,
     });
 
     return httpUtils.successResponse({

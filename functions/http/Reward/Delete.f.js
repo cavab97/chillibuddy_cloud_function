@@ -3,11 +3,7 @@ import * as backendServices from "../../z-tools/marslab-library-cloud-function/s
 import { dataServices as objectDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
 
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
-import {
-  reward as object,
-  route,
-  event,
-} from "../../z-tools/system/objectsConfig";
+import { reward as object, route, event } from "../../z-tools/system/objectsConfig";
 
 const objectName = "reward";
 const eventAction = "Delete";
@@ -17,6 +13,7 @@ let subjectName = null;
 let subjectIds = [];
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("delete");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -39,7 +36,7 @@ export default functions.https.onCall(async (data, context) => {
       dataCategory: "Private0",
     });
 
-    if(subjectData[0].published.boolean){
+    if (subjectData[0].published.boolean) {
       backendServices.data.unavailable({
         message: `Can't delete reward after the ${subjectName} published.`,
       });
@@ -49,16 +46,16 @@ export default functions.https.onCall(async (data, context) => {
     const result = await objectDataServices.remove({
       objectName,
       objectId: data.id,
-      deletedByUid: uid
+      deletedByUid: uid,
     });
 
-    objectId = result.objectId
+    objectId = result.objectId;
 
     return httpUtils.successResponse({
       objectName,
       ids: [objectId],
       action: eventAction,
-      message: `Delete ${objectName} successfully.`
+      message: `Delete ${objectName} successfully.`,
     });
   } catch (error) {
     const { code, message } = error;
@@ -70,7 +67,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: eventAction,
-      message: message
+      message: message,
     });
     return error;
   }

@@ -6,7 +6,7 @@ import { system } from "../../z-tools/marslab-library-cloud-function/system/obje
 import {
   invitationDataServices,
   userDataServices,
-  systemDataServices
+  systemDataServices,
 } from "../../z-tools/marslab-library-cloud-function/services/database";
 import * as authServices from "../../z-tools/marslab-library-cloud-function/services/auth";
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
@@ -15,22 +15,17 @@ const objectName = "Invitation";
 const event = "Response to";
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("userAsAdminResponse");
   try {
     const { objectIds = [], accepted = false, rejected = false } = data;
     const ids = objectIds;
     const uid = "RRHdliHQ53bZWHrBESxM9RHO6hl2";
 
     const actionPromises = [];
-    const invitations = await invitationDataServices.readInvitations({objectIds});
+    const invitations = await invitationDataServices.readInvitations({ objectIds });
     const objectData = { accepted, rejected };
     const [
-      {
-        id = null,
-        directObjectName = null,
-        directObjectIds = [],
-        type = null,
-        action = null
-      }
+      { id = null, directObjectName = null, directObjectIds = [], type = null, action = null },
     ] = invitations;
 
     if (!accepted && !rejected) {
@@ -38,21 +33,21 @@ export default functions.https.onCall(async (data, context) => {
         objectName,
         ids,
         action: event,
-        message: "Invalid Command."
+        message: "Invalid Command.",
       });
     }
 
     if (rejected) {
       await invitationDataServices.update({
-        objectId:id,
+        objectId: id,
         objectData,
-        updatedByUid: uid
+        updatedByUid: uid,
       });
       return httpUtils.successResponse({
         objectName,
         ids,
         action: event,
-        message: "The Invitation Rejected."
+        message: "The Invitation Rejected.",
       });
     }
 
@@ -63,7 +58,7 @@ export default functions.https.onCall(async (data, context) => {
             objectName,
             ids,
             action: event,
-            message: "No permission to perform the action."
+            message: "No permission to perform the action.",
           });
         }
         switch (action) {
@@ -71,7 +66,7 @@ export default functions.https.onCall(async (data, context) => {
             actionPromises.push(
               authServices.updateCustomUserClaims({
                 uid,
-                customClaims: roleClaims.admin
+                customClaims: roleClaims.admin,
               })
             );
 
@@ -79,7 +74,7 @@ export default functions.https.onCall(async (data, context) => {
               userDataServices.createRelation({
                 subjectName: "system",
                 subjectIds: ["management"],
-                objectIds: [uid]
+                objectIds: [uid],
               })
             );
 
@@ -87,7 +82,7 @@ export default functions.https.onCall(async (data, context) => {
               userDataServices.update({
                 objectId: uid,
                 objectData: roleClaims.admin,
-                updatedByUid: uid
+                updatedByUid: uid,
               })
             );
 
@@ -95,7 +90,7 @@ export default functions.https.onCall(async (data, context) => {
               systemDataServices.update({
                 objectId: "management",
                 objectArrayUnionData: system.relation.system.set.admin({ uid }),
-                updatedByUid: uid
+                updatedByUid: uid,
               })
             );
 
@@ -108,14 +103,14 @@ export default functions.https.onCall(async (data, context) => {
         break;
     }
 
-    await Promise.all(actionPromises)
-    await invitationDataServices.update({ objectId:id, objectData, updatedByUid: uid });
+    await Promise.all(actionPromises);
+    await invitationDataServices.update({ objectId: id, objectData, updatedByUid: uid });
 
     return httpUtils.successResponse({
       objectName,
       ids,
       action: event,
-      message: "The Invitation Accepted."
+      message: "The Invitation Accepted.",
     });
   } catch (error) {
     console.log(error);

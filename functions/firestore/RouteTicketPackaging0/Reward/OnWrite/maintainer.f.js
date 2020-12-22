@@ -6,21 +6,17 @@ const targetName = "reward";
 
 export default functions
   .region("asia-east2")
-  .firestore.document(
-    `${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`
-  )
+  .firestore.document(`${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`)
   .onWrite(async (snap, context) => {
+    console.log("routeTicket rewardMaintainer.f.js");
+
     try {
       const objectId = context.params.objectId;
 
       return await objectDataServices.db.runTransaction((transaction) => {
-        const objectRef = objectDataServices.db.doc(
-          `${objectName}Private0/${objectId}`
-        );
+        const objectRef = objectDataServices.db.doc(`${objectName}Private0/${objectId}`);
         const functionEventId = context.eventId;
-        const idempotentRef = objectDataServices.db.doc(
-          `log/function/eventId/${functionEventId}`
-        );
+        const idempotentRef = objectDataServices.db.doc(`log/function/eventId/${functionEventId}`);
 
         return transaction.getAll(objectRef, idempotentRef).then((docs) => {
           const object = docs[0];
@@ -36,7 +32,7 @@ export default functions
 
           let reward = snap.after.data();
           const rewardIds = [snap.after.data().id];
-          
+
           reward = { ...reward };
 
           //update

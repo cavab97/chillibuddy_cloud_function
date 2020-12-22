@@ -1,10 +1,7 @@
 import * as functions from "firebase-functions";
 import * as backendServices from "../../z-tools/marslab-library-cloud-function/services/backend";
 import { dataServices as objectDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
-import {
-  routeTicket as object,
-  route as subject,
-} from "../../z-tools/system/objectsConfig";
+import { routeTicket as object, route as subject } from "../../z-tools/system/objectsConfig";
 import { user as directObject } from "../../z-tools/marslab-library-cloud-function/system/objectsConfig";
 
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
@@ -18,6 +15,7 @@ let objectId = null;
 const maximumUsers = 100;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("create");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -88,10 +86,7 @@ export default functions.https.onCall(async (data, context) => {
       });
     }
 
-    if (
-      !route.published.at ||
-      objectDataServices.Time.now().seconds < route.startTime.seconds
-    ) {
+    if (!route.published.at || objectDataServices.Time.now().seconds < route.startTime.seconds) {
       backendServices.data.unavailable({
         message: "The route currently unavailable.",
       });
@@ -125,14 +120,12 @@ export default functions.https.onCall(async (data, context) => {
     objectId = result.objectId;
 
     const objectIds = [objectId];
-    const subjectObjectRelation = subject.relation.route.create.routeTicket.toUser(
-      {
-        subjectName,
-        subjectIds,
-        directObjectName,
-        directObjectIds,
-      }
-    );
+    const subjectObjectRelation = subject.relation.route.create.routeTicket.toUser({
+      subjectName,
+      subjectIds,
+      directObjectName,
+      directObjectIds,
+    });
 
     await objectDataServices.createRelation({
       subjectName,

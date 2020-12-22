@@ -11,6 +11,7 @@ const event = "Create";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("create");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -20,29 +21,27 @@ export default functions.https.onCall(async (data, context) => {
     const referenceData = object.attributes({});
     backendServices.data.validation({
       target: data,
-      reference: referenceData.receivableState
+      reference: referenceData.receivableState,
     });
 
     const subjectIds = data.shopIds;
 
-    if(subjectIds.length === 0)
-    {
-      backendServices.data.objectNotExist({message:"Shop id required."})
+    if (subjectIds.length === 0) {
+      backendServices.data.objectNotExist({ message: "Shop id required." });
     }
 
     //Read other object
-    const readShops = objectDataServices.read({ 
-      objectName:"shop", 
-      objectIds: subjectIds
+    const readShops = objectDataServices.read({
+      objectName: "shop",
+      objectIds: subjectIds,
     });
-    
-    const readPromise = await Promise.all([readShops])
+
+    const readPromise = await Promise.all([readShops]);
 
     const shop = readPromise[0][0];
 
-    if(shop === null)
-    {
-      backendServices.data.objectNotExist({message:"Shop not exist."})
+    if (shop === null) {
+      backendServices.data.objectNotExist({ message: "Shop not exist." });
     }
 
     //validate
@@ -53,8 +52,8 @@ export default functions.https.onCall(async (data, context) => {
     // }
 
     //Data Correction
-    data = { ...data, shop:{...shop.d, ...shop }  }
-    delete data.shop["d"]
+    data = { ...data, shop: { ...shop.d, ...shop } };
+    delete data.shop["d"];
 
     //Data Processing
     const objectData = object.attributes(data);
@@ -63,15 +62,15 @@ export default functions.https.onCall(async (data, context) => {
     const result = await objectDataServices.create({
       objectName,
       objectData,
-      createdByUid: uid
+      createdByUid: uid,
     });
 
-    objectId = result.objectId
+    objectId = result.objectId;
 
-    const objectIds = [objectId]
+    const objectIds = [objectId];
     const subjectObjectRelation = subject.relation.shop.create.shopPost.asChild({
       subjectName,
-      subjectIds
+      subjectIds,
     });
 
     await objectDataServices.createRelation({
@@ -79,14 +78,14 @@ export default functions.https.onCall(async (data, context) => {
       subjectIds,
       objectName,
       objectIds,
-      subjectObjectRelation
+      subjectObjectRelation,
     });
 
     return httpUtils.successResponse({
       objectName,
       ids: [objectId],
       action: event,
-      message: `Created ${objectName} successfully.`
+      message: `Created ${objectName} successfully.`,
     });
   } catch (error) {
     const { code, message } = error;
@@ -98,7 +97,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

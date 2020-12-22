@@ -10,6 +10,7 @@ const event = "Delete";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("delete");
   try {
     //Validate Permission
     const uid = context.auth.uid;

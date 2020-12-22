@@ -12,6 +12,7 @@ let objectId = null;
 let uid = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("update");
   try {
     //Validate Permission
     uid = context.auth.uid;

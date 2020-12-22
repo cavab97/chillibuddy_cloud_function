@@ -2,17 +2,20 @@ import * as functions from "firebase-functions";
 import { invitation } from "../../../z-tools/marslab-library-cloud-function/system/objectsConfig";
 import { invitationDataServices } from "../../../z-tools/marslab-library-cloud-function/services/database";
 
-const objectName = "invitation"
+const objectName = "invitation";
 
-export default functions.region("asia-east2").firestore
-  .document(`${objectName}Private0/{${objectName}Id}`)
+export default functions
+  .region("asia-east2")
+  .firestore.document(`${objectName}Private0/{${objectName}Id}`)
   .onUpdate((snap, context) => {
+    console.log("invitation FanOutToRelation.f.js");
+
     try {
       const objectId = snap.after.id;
 
       const objectBeforeData = snap.before.data();
       const objectAfterData = snap.after.data();
-      const objectAttributes = invitation.attributes(objectAfterData)
+      const objectAttributes = invitation.attributes(objectAfterData);
 
       const fanOutTargetObjectNames = invitation.fanOut();
 
@@ -21,12 +24,9 @@ export default functions.region("asia-east2").firestore
         objectBeforeData,
         objectAfterData,
         objectAttributes,
-        fanOutTargetObjectNames
+        fanOutTargetObjectNames,
       });
-      
     } catch (error) {
       return console.error(error);
     }
   });
-
-

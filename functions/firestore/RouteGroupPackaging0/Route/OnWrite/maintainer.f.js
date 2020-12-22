@@ -4,27 +4,22 @@ import { dataServices as objectDataServices } from "../../../../z-tools/marslab-
 const objectName = "routeGroup";
 const targetName = "route";
 
-export default functions.region("asia-east2").firestore
-  .document(
-    `${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`
-  )
+export default functions
+  .region("asia-east2")
+  .firestore.document(`${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`)
   .onWrite(async (snap, context) => {
+    console.log("routeGroup maintainer.f.js");
+
     try {
-      const {objectId, targetId} = context.params;
+      const { objectId, targetId } = context.params;
       const functionEventId = context.eventId;
 
       return await objectDataServices.db.runTransaction((transaction) => {
-        const objectRef = objectDataServices.db.doc(
-          `${objectName}Private0/${objectId}`
-        );
-        const idempotentRef = objectDataServices.db.doc(
-          `log/function/eventId/${functionEventId}`
-        );
-        const routeRef = objectDataServices.db.doc(
-          `routePrivate0/${targetId}`
-        );
+        const objectRef = objectDataServices.db.doc(`${objectName}Private0/${objectId}`);
+        const idempotentRef = objectDataServices.db.doc(`log/function/eventId/${functionEventId}`);
+        const routeRef = objectDataServices.db.doc(`routePrivate0/${targetId}`);
 
-        return transaction.getAll(objectRef, idempotentRef,routeRef).then(async (docs) => {
+        return transaction.getAll(objectRef, idempotentRef, routeRef).then(async (docs) => {
           const object = docs[0];
           const idempotent = docs[1];
           const route = docs[2];
@@ -44,39 +39,34 @@ export default functions.region("asia-east2").firestore
           let pendingRoutes = 0;
           let ongoingRoutes = 0;
           let endRoutes = 0;
-          
 
-          if (snap.before.exists){
+          if (snap.before.exists) {
             // read other object
             const routesSnapShot = await objectDataServices.db
-                            .collection(`routePrivate0`)
-                            .where("routeGroupId", "array-contains", objectId)
-                            .where("published.boolean", "==", true)
-                            .where("deleted.at", "==", null)
-                            .where("terminated.boolean", "==", false)
-                            .get()
+              .collection(`routePrivate0`)
+              .where("routeGroupId", "array-contains", objectId)
+              .where("published.boolean", "==", true)
+              .where("deleted.at", "==", null)
+              .where("terminated.boolean", "==", false)
+              .get();
 
             const routes = [];
-            routesSnapShot.forEach((docSnapShot)=>{
+            routesSnapShot.forEach((docSnapShot) => {
               const route = docSnapShot.data();
               routes.push(route);
-            })
+            });
 
             totalRoutes = routes.length;
 
             routes.forEach((route) => {
-              
-              if(route.ended.boolean){
+              if (route.ended.boolean) {
                 endRoutes = ++endRoutes;
-
-              }else if(route.ongoing.boolean){
+              } else if (route.ongoing.boolean) {
                 ongoingRoutes = ++ongoingRoutes;
-
-              }else if(route.pending.boolean){
+              } else if (route.pending.boolean) {
                 pendingRoutes = ++pendingRoutes;
               }
             });
-
           }
 
           /* let {
@@ -165,8 +155,6 @@ export default functions.region("asia-east2").firestore
               pendingRoutes = --pendingRoutes;
             }
           } */
-
-          
 
           transaction.update(objectRef, {
             ["d.totalRoutes"]: totalRoutes,

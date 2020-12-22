@@ -10,6 +10,7 @@ const event = "Restore";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("restore");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -17,16 +18,16 @@ export default functions.https.onCall(async (data, context) => {
 
     //Output
     const result = await objectDataServices.restore({
-      objectId: data.id
+      objectId: data.id,
     });
 
-    objectId = result.objectId
+    objectId = result.objectId;
 
     return httpUtils.successResponse({
       objectName,
       ids: [objectId],
       action: event,
-      message: `Restore shop successfully.`
+      message: `Restore shop successfully.`,
     });
   } catch (error) {
     const { code, message } = error;
@@ -38,7 +39,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

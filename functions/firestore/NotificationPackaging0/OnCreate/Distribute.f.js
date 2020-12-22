@@ -5,9 +5,12 @@ import { notification as object } from "../../../z-tools/marslab-library-cloud-f
 const objectName = "notification";
 const targetName = "user";
 
-export default functions.region("asia-east2").firestore
-  .document(`${objectName}Packaging0/{objectId}`)
+export default functions
+  .region("asia-east2")
+  .firestore.document(`${objectName}Packaging0/{objectId}`)
   .onCreate(async (snap, context) => {
+    console.log("notification distribute.f.js");
+
     try {
       const { objectId } = context.params;
       const functionEventId = context.eventId;

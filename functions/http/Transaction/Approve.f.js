@@ -10,17 +10,18 @@ const event = "Approve";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("approve");
   try {
     //Validate Permission
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
-    const approveData =
-      {
-        approved : { 
-          at: objectDataServices.Time.now(), 
-          by: uid },
-      }
+    const approveData = {
+      approved: {
+        at: objectDataServices.Time.now(),
+        by: uid,
+      },
+    };
 
     //Data Processing
     const objectData = object.attributes(approveData).approveObjectState;

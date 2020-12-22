@@ -8,21 +8,19 @@ const targetName = "notification";
 
 export default functions
   .region("asia-east2")
-  .firestore.document(
-    `${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`
-  )
+  .firestore.document(`${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`)
   .onCreate(async (snap, context) => {
+    console.log("push noti.f.js");
+
     try {
       const { objectId, targetId } = context.params;
       const functionEventId = context.eventId;
 
-      const idempotentRef = objectDataServices.db.doc(
-        `log/function/eventId/${functionEventId}`
-      );
+      const idempotentRef = objectDataServices.db.doc(`log/function/eventId/${functionEventId}`);
 
       const target = snap.data();
 
-      const readIdempotent = idempotentRef.get()
+      const readIdempotent = idempotentRef.get();
 
       const readUser = objectDataServices.read({
         objectName,
@@ -30,15 +28,15 @@ export default functions
         dataCategory: "Private0",
       });
 
-      const readPromises = await Promise.all([ readIdempotent, readUser ])
+      const readPromises = await Promise.all([readIdempotent, readUser]);
 
-      const idempotent = readPromises[0]
+      const idempotent = readPromises[0];
 
-      if(idempotent.exists){
+      if (idempotent.exists) {
         return console.log("Function trigger repeatly.");
       }
 
-      const user = readPromises[1]
+      const user = readPromises[1];
 
       const { notificationToken } = user[0];
 
@@ -82,9 +80,7 @@ export default functions
         return null;
       }
 
-      const notificationResult = await notification.sendToNotificationServer(
-        message
-      );
+      const notificationResult = await notification.sendToNotificationServer(message);
 
       const unregisterToken = notification.validateToken(
         validatedNotificationToken,

@@ -8,6 +8,7 @@ export default functions
   .region("asia-east2")
   .firestore.document(`${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`)
   .onWrite(async (snap, context) => {
+    console.log("bookmarkMaintainer.f.js");
     try {
       const { objectId } = context.params;
       const functionEventId = context.eventId;

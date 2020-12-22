@@ -4,12 +4,13 @@ import { dataServices as objectDataServices } from "../../z-tools/marslab-librar
 
 const objectName = "promotion";
 
-export default functions.region("asia-east2").pubsub
-  .schedule("every 5 minutes")
+export default functions
+  .region("asia-east2")
+  .pubsub.schedule("every 5 minutes")
   .onRun(async (context) => {
     try {
       const expiredPromotionIds = [];
-
+      console.log("start");
       await objectDataServices.db
         .collection(`${objectName}Private0`)
         .where("d.startTime", "<=", objectDataServices.Time.now())
@@ -29,15 +30,15 @@ export default functions.region("asia-east2").pubsub
         boolean: true,
       };
 
-      const writePromise = []
+      const writePromise = [];
 
-      expiredPromotionIds.forEach((promotionId)=>{
-        const ref = `${objectName}Private0/${promotionId}`
-        const update = objectDataServices.db.doc(ref).update({["d.started"]: started})
-        writePromise.push(update)
-      })
+      expiredPromotionIds.forEach((promotionId) => {
+        const ref = `${objectName}Private0/${promotionId}`;
+        const update = objectDataServices.db.doc(ref).update({ ["d.started"]: started });
+        writePromise.push(update);
+      });
 
-      return await Promise.all(writePromise)
+      return await Promise.all(writePromise);
     } catch (error) {
       return console.log(error);
     }

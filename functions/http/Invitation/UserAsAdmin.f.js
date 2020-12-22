@@ -1,5 +1,8 @@
 import * as functions from "firebase-functions";
-import { system, invitation } from "../../z-tools/marslab-library-cloud-function/system/objectsConfig";
+import {
+  system,
+  invitation,
+} from "../../z-tools/marslab-library-cloud-function/system/objectsConfig";
 import * as authService from "../../z-tools/marslab-library-cloud-function/services/auth";
 import { invitationDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
 
@@ -10,27 +13,33 @@ const event = "Invite As Admin";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("userAsAdmin");
   try {
-
     //Validate Permission
     const uid = context.auth.uid;
     if (!uid) {
-      throw new Object({code: httpUtils.FunctionsErrorCode.unauthenticated, message: "Authenticated needed."}) 
+      throw new Object({
+        code: httpUtils.FunctionsErrorCode.unauthenticated,
+        message: "Authenticated needed.",
+      });
     }
 
-    const sender = await authService.getUserByUid({uid});
+    const sender = await authService.getUserByUid({ uid });
 
     if (!sender.customClaims.role.admin) {
-      throw new Object({code: httpUtils.FunctionsErrorCode.permissionDenied, message: "Insufficient permission to perform the action."}) 
+      throw new Object({
+        code: httpUtils.FunctionsErrorCode.permissionDenied,
+        message: "Insufficient permission to perform the action.",
+      });
     }
 
     //Validate Data
     const { receiverEmail } = data;
 
     //Pre-condition Data Fetching
-    const receiver = await authService.getUserByEmail({email:receiverEmail}).catch(error=>{
-      throw new Object({code: httpUtils.FunctionsErrorCode.notFound, message: "User not found."}) 
-    })
+    const receiver = await authService.getUserByEmail({ email: receiverEmail }).catch((error) => {
+      throw new Object({ code: httpUtils.FunctionsErrorCode.notFound, message: "User not found." });
+    });
 
     const receiverUid = receiver.uid;
 
@@ -58,16 +67,16 @@ export default functions.https.onCall(async (data, context) => {
       subjectName,
       subjectIds,
       directObjectName,
-      directObjectIds
+      directObjectIds,
     });
 
     //Output
-    const object  = await invitationDataServices.create({
+    const object = await invitationDataServices.create({
       objectData: invitationData,
-      createdByUid: uid
+      createdByUid: uid,
     });
 
-    objectId = object.objectId
+    objectId = object.objectId;
 
     const objectIds = [objectId];
 
@@ -77,17 +86,17 @@ export default functions.https.onCall(async (data, context) => {
       objectIds,
       directObjectName,
       directObjectIds,
-      subjectObjectRelation
+      subjectObjectRelation,
     });
 
     return httpUtils.successResponse({
       objectName,
       ids: [objectId],
       action: event,
-      message: `System send invitation as admin to user ${receiverUid} successfully.`
+      message: `System send invitation as admin to user ${receiverUid} successfully.`,
     });
   } catch (error) {
-    const { code, message } = error
+    const { code, message } = error;
 
     console.log(error);
 
@@ -96,7 +105,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

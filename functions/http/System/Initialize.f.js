@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import { setCustomUserClaims } from "../../z-tools/marslab-library-cloud-function/services/auth";
 import { systemDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
-import { system,user } from "../../z-tools/marslab-library-cloud-function/system/objectsConfig";
+import { system, user } from "../../z-tools/marslab-library-cloud-function/system/objectsConfig";
 import { roleClaims } from "../../z-tools/marslab-library-cloud-function/system/customClaimsConfig";
 
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
@@ -12,9 +12,10 @@ const objectIds = [objectId];
 const event = "Initialize";
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("initialize");
   try {
     //Validate Data
-    
+
     //Validate Permission
     const uid = context.auth.uid;
 
@@ -22,13 +23,15 @@ export default functions.https.onCall(async (data, context) => {
     const [object] = await systemDataServices.readSystem({ objectIds });
 
     if (object) {
-      throw new Object({code: httpUtils.FunctionsErrorCode.alreadyExists, message: "This system initialized before."}) 
+      throw new Object({
+        code: httpUtils.FunctionsErrorCode.alreadyExists,
+        message: "This system initialized before.",
+      });
     }
 
     const customClaims = roleClaims.absoluteDeveloper;
 
     const promises = [];
-
 
     //set Absolute Admin Permission
     promises.push(setCustomUserClaims({ uid, customClaims }));
@@ -39,7 +42,7 @@ export default functions.https.onCall(async (data, context) => {
     await systemDataServices.create({ objectId, objectData });
 
     const subjectObjectRelation = user.relation.user.initialize.system({
-      uid
+      uid,
     });
 
     promises.push(
@@ -47,7 +50,7 @@ export default functions.https.onCall(async (data, context) => {
         subjectName: "user",
         subjectIds: [uid],
         objectIds: [objectId],
-        subjectObjectRelation
+        subjectObjectRelation,
       })
     );
 
@@ -57,10 +60,10 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: `user ${uid} initial system successfully.`
+      message: `user ${uid} initial system successfully.`,
     });
   } catch (error) {
-    const { code, message } = error
+    const { code, message } = error;
 
     console.log(error);
 
@@ -69,7 +72,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

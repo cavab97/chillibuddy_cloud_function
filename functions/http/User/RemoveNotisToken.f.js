@@ -8,9 +8,10 @@ import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/h
 const objectName = "user";
 const event = "RemoveNotisToken";
 let objectId = null;
-let uid = null
+let uid = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("remove notis token");
   try {
     //Validate Permission
     uid = context.auth.uid;
@@ -27,13 +28,13 @@ export default functions.https.onCall(async (data, context) => {
       reference: referenceData.receivableState,
     });
 
-    if( typeof data.notificationToken[0] !== 'string'){
-      backendServices.data.invalidArgument({message: "The notification token invalid"})
+    if (typeof data.notificationToken[0] !== "string") {
+      backendServices.data.invalidArgument({ message: "The notification token invalid" });
     }
 
     //Data Processing
-    const notificationTokenData = { notificationToken : data.notificationToken[0]}
-    const objectData = object.attributes(data).notificationTokenState
+    const notificationTokenData = { notificationToken: data.notificationToken[0] };
+    const objectData = object.attributes(data).notificationTokenState;
 
     //Output
 
@@ -42,7 +43,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       objectData,
       objectId: uid,
-      objectArrayRemoveData : notificationTokenData,
+      objectArrayRemoveData: notificationTokenData,
       updatedByUid: uid,
     });
 

@@ -10,19 +10,20 @@ const event = "Verify";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("verify");
   try {
     //Validate Permission
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
     //Data Correction
-    data = { ...data }
+    data = { ...data };
 
     //Validate Data
     const referenceData = object.attributes({});
     backendServices.data.validation({
       target: data,
-      reference: referenceData.receivableState
+      reference: referenceData.receivableState,
     });
 
     //Data Processing
@@ -33,7 +34,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       objectId: data.id,
       objectData,
-      updatedByUid: uid
+      updatedByUid: uid,
     });
 
     objectId = result.objectId;
@@ -42,7 +43,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: `Verify ${objectName} successfully.`
+      message: `Verify ${objectName} successfully.`,
     });
   } catch (error) {
     const { code, message } = error;
@@ -54,7 +55,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

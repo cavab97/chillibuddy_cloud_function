@@ -10,19 +10,19 @@ const event = "Terminate";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("terminate");
   try {
     //Validate Permission
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
-    const terminatedData ={
-            terminated: {
-              at: objectDataServices.Time.now(),
-              by: uid,
-              boolean:true
-            }}
-    
-    
+    const terminatedData = {
+      terminated: {
+        at: objectDataServices.Time.now(),
+        by: uid,
+        boolean: true,
+      },
+    };
 
     //Data Processing
     const objectData = object.attributes(terminatedData).terminateObjectState;

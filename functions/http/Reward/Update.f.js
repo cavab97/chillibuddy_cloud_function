@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
 import * as backendServices from "../../z-tools/marslab-library-cloud-function/services/backend";
 import { dataServices as objectDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
-import { reward as object} from "../../z-tools/system/objectsConfig";
+import { reward as object } from "../../z-tools/system/objectsConfig";
 
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
 
@@ -10,21 +10,23 @@ const event = "Update";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("update");
+
   try {
     //Validate Permission
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
     //Data Correction
-    data = { 
-      ...data
-    }
+    data = {
+      ...data,
+    };
 
     //Validate Data
     const referenceData = object.attributes({});
     backendServices.data.validation({
       target: data,
-      reference: referenceData.receivableState
+      reference: referenceData.receivableState,
     });
 
     //Data Processing
@@ -35,7 +37,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       objectId: data.id,
       objectData,
-      updatedByUid: uid
+      updatedByUid: uid,
     });
 
     objectId = result.objectId;
@@ -44,7 +46,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: `Update ${objectName} successfully.`
+      message: `Update ${objectName} successfully.`,
     });
   } catch (error) {
     const { code, message } = error;
@@ -56,7 +58,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

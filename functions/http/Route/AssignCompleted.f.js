@@ -10,21 +10,22 @@ const event = "AssignCompleted";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("assign completed");
   try {
     //Validate Permission
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
     //read other object
-    const routes = await objectDataServices.read({objectName, objectIds: [data.id]})
-    const route = routes[0]
+    const routes = await objectDataServices.read({ objectName, objectIds: [data.id] });
+    const route = routes[0];
 
-    if(!route.ended.by){
-      backendServices.data.objectExist({message:"Can't assign complete before route end."})
+    if (!route.ended.by) {
+      backendServices.data.objectExist({ message: "Can't assign complete before route end." });
     }
 
-    if(route.assignCompleted){
-        backendServices.data.objectExist({message:"This route has been assign completed before."})
+    if (route.assignCompleted) {
+      backendServices.data.objectExist({ message: "This route has been assign completed before." });
     }
 
     const assignCompleted = { assignCompleted: true };

@@ -10,6 +10,7 @@ const event = "Claim";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("claim");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -18,7 +19,7 @@ export default functions.https.onCall(async (data, context) => {
     const claimData = {
       claimed: {
         at: objectDataServices.Time.now(),
-        by: uid
+        by: uid,
       },
     };
 

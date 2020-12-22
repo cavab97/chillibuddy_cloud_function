@@ -11,13 +11,13 @@ import admin from "firebase-admin";
 const firestore = admin.firestore;
 const time = firestore.Timestamp;
 
-
 const objectName = "shop";
-const targetName = "promotion"
+const targetName = "promotion";
 const event = "Delete";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("delete");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -27,8 +27,8 @@ export default functions.https.onCall(async (data, context) => {
       ["d.deleted"]: {
         at: time.now(),
         by: uid,
-      }
-    }
+      },
+    };
 
     objectId = data.id;
 
@@ -38,7 +38,7 @@ export default functions.https.onCall(async (data, context) => {
       .where("d.started.boolean", "==", true)
       .where("d.ended.boolean", "==", false)
       .where("d.deleted.at", "==", null)
-      .get()
+      .get();
 
     const promotionRunIds = [];
     targetSnapShot.forEach((docSnapShot) => {
@@ -46,24 +46,26 @@ export default functions.https.onCall(async (data, context) => {
       promotionRunIds.push(promotionId);
     });
 
-    if(promotionRunIds.length > 0){
-      backendServices.data.invalidArgument({message:"shop cannot delete, shop's promotion are running."})
+    if (promotionRunIds.length > 0) {
+      backendServices.data.invalidArgument({
+        message: "shop cannot delete, shop's promotion are running.",
+      });
     }
 
     //Output
     const result = await objectDataServices.remove({
       objectId: data.id,
       deletedByUid: uid,
-      additionUpdate: deleted
+      additionUpdate: deleted,
     });
 
-    objectId = result.objectId
+    objectId = result.objectId;
 
     return httpUtils.successResponse({
       objectName,
       ids: [objectId],
       action: event,
-      message: `Delete shop successfully.`
+      message: `Delete shop successfully.`,
     });
   } catch (error) {
     const { code, message } = error;
@@ -75,7 +77,7 @@ export default functions.https.onCall(async (data, context) => {
       objectName,
       ids: [objectId],
       action: event,
-      message: message
+      message: message,
     });
     return error;
   }

@@ -1,10 +1,7 @@
 import * as functions from "firebase-functions";
 import * as backendServices from "../../z-tools/marslab-library-cloud-function/services/backend";
 import { dataServices as objectDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
-import {
-  transaction as object,
-  user as subject,
-} from "../../z-tools/system/objectsConfig";
+import { transaction as object, user as subject } from "../../z-tools/system/objectsConfig";
 
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
 
@@ -14,6 +11,7 @@ const event = "Create";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
+  console.log("create");
   try {
     //Validate Permission
     const uid = context.auth.uid;
@@ -30,10 +28,11 @@ export default functions.https.onCall(async (data, context) => {
       backendServices.data.invalidArgument({
         message: "The payment type have to be cash for currently",
       });
-    
-    
-    if (//!data.payment.amount || 
-      !data.payment.receiptPhotoUrl)
+
+    if (
+      //!data.payment.amount ||
+      !data.payment.receiptPhotoUrl
+    )
       backendServices.data.invalidArgument({
         message: "Amount & resit is needed.",
       });
@@ -101,19 +100,19 @@ export default functions.https.onCall(async (data, context) => {
       });
     }
 
-    if(!route.partyData.ongoing.boolean){
+    if (!route.partyData.ongoing.boolean) {
       backendServices.data.unavailable({
         message: "The Route not yet available",
       });
     }
 
-    if(route.partyData.terminated.boolean){
+    if (route.partyData.terminated.boolean) {
       backendServices.data.deadlineExceeded({
         message: "The Route had terminated",
       });
     }
 
-    if(route.partyData.ended.boolean){
+    if (route.partyData.ended.boolean) {
       backendServices.data.deadlineExceeded({
         message: "The Route had ended",
       });
@@ -147,11 +146,9 @@ export default functions.https.onCall(async (data, context) => {
     //Data Processing
     const objectData = object.attributes(data);
 
-    const subjectObjectRelation = subject.relation.user.create.transaction.toJoin(
-      {
-        relatedParties,
-      }
-    );
+    const subjectObjectRelation = subject.relation.user.create.transaction.toJoin({
+      relatedParties,
+    });
 
     //Output
     const result = await objectDataServices.createWithRelation({

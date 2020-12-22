@@ -4,22 +4,19 @@ import { dataServices as objectDataServices } from "../../../../z-tools/marslab-
 const objectName = "route";
 const targetName = "reward";
 
-export default functions.region("asia-east2").firestore
-  .document(
-    `${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`
-  )
+export default functions
+  .region("asia-east2")
+  .firestore.document(`${objectName}Packaging0/{objectId}/${targetName}Packaging0/{targetId}`)
   .onWrite(async (snap, context) => {
+    console.log("route rewardMaintainer.f.js");
+
     try {
       const { objectId } = context.params;
       const functionEventId = context.eventId;
 
       return await objectDataServices.db.runTransaction((transaction) => {
-        const objectRef = objectDataServices.db.doc(
-          `${objectName}Private0/${objectId}`
-        );
-        const idempotentRef = objectDataServices.db.doc(
-          `log/function/eventId/${functionEventId}`
-        );
+        const objectRef = objectDataServices.db.doc(`${objectName}Private0/${objectId}`);
+        const idempotentRef = objectDataServices.db.doc(`log/function/eventId/${functionEventId}`);
 
         return transaction.getAll(objectRef, idempotentRef).then((docs) => {
           const object = docs[0];
@@ -32,11 +29,7 @@ export default functions.region("asia-east2").firestore
           if (idempotent.exists) {
             return console.log("Function trigger repeatly.");
           }
-          let { 
-            totalRewards, 
-            winner, 
-            assignedRewards
-          } = object.data();
+          let { totalRewards, winner, assignedRewards } = object.data();
 
           if (!snap.before.exists) {
             totalRewards = ++totalRewards;
@@ -68,7 +61,7 @@ export default functions.region("asia-east2").firestore
             snap.after.data().obtained.at !== null
           ) {
             assignedRewards = ++assignedRewards;
-            
+
             transaction.update(objectRef, {
               assignedRewards,
             });
