@@ -41,10 +41,10 @@ export default functions.https.onCall(async (data, context) => {
       objectIds: subjectIds,
     });
 
-    const [users, checkInTicket] = await Promise.all([readUsers, readCheckIn]);
+    const [users, checkInTickets] = await Promise.all([readUsers, readCheckIn]);
 
     const user = users[0];
-    let checkInTicket = checkInTicket[0];
+    let checkInTicket = checkInTickets[0];
 
     //Object verification
     if (user === null) {

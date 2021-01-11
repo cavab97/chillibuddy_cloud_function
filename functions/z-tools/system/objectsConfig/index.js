@@ -13,6 +13,8 @@ import * as settingInfo from "./setting/info";
 import * as covid19NameList from "./covid19NameList";
 import * as covid19Shop from "./covid19Shop";
 import * as bookmark from "./bookmark";
+import * as checkInTicket from "./checkInTicket";
+import * as voucher from "./voucher";
 
 export {
   user,
@@ -30,4 +32,6 @@ export {
   covid19NameList,
   covid19Shop,
   bookmark,
+  checkInTicket,
+  voucher,
 };

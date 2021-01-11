@@ -37,9 +37,8 @@ export default functions
         const prevUserIds = voucherId.d.userIds;
         const prevUser = voucherId.d.user;
         const prevAssignedDate = voucherId.d.assignedDate;
-        const assignedDate = { at: null, by: null },
+        const assignedDate = { at: null, by: null };
         const endDate = new Date();
-
 
         const update = objectDataServices.db
           .doc(ref)
