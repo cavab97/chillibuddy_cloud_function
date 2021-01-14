@@ -16,7 +16,11 @@ export default functions.https.onCall(async (data, context) => {
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
     //Data Correction
-    data = { ...data };
+    data = { 
+      ...data,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate)
+    };
 
     //Validate Data
     const referenceData = object.attributes({});

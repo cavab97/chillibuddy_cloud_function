@@ -16,6 +16,13 @@ export default functions.https.onCall(async (data, context) => {
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid, role: "admin" });
 
+    //Data Correction
+    data = { 
+      ...data,
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate)
+    }
+
     //Validate Data
     const referenceData = object.attributes({});
     backendServices.data.validation({
@@ -44,24 +51,25 @@ export default functions.https.onCall(async (data, context) => {
     }
 
     //validate
-    // if(data.endTime < objectDataServices.Time.now()){
-    //   backendServices.data.unavailable({
-    //     message: `End time cannot before current time.`,
-    //   });
-    // }
+    if(data.endDate && data.endDate < data.startDate && data.startDate){
+      backendServices.data.unavailable({
+        message: `End date cannot before start date.`,
+      });
+    }
 
     //Data Correction
-    data = { ...data, shop: { ...shop.d, ...shop } };
-    delete data.shop["d"];
+    data = { ...data, shop:{...shop.d, ...shop }  }
+    delete data.shop["d"]
 
     //Data Processing
     const objectData = object.attributes(data);
 
     //Output
     const result = await objectDataServices.create({
+      objectId: data.id,
       objectName,
       objectData,
-      createdByUid: uid,
+      createdByUid: uid
     });
 
     objectId = result.objectId;
