@@ -18,9 +18,9 @@ export default functions.https.onCall(async (data, context) => {
     //Data Correction
     data = { 
       ...data,
-      startDate: new Date(startDate),
-      endDate: new Date(endDate)
-    };
+      startDate: data.startDate ? new Date(data.startDate) : null,
+      endDate: data.endDate ? new Date(data.endDate) : null
+    }
 
     //Validate Data
     const referenceData = object.attributes({});

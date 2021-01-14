@@ -85,7 +85,7 @@ export default function attributes({
     updated: { at: null, by: null },
     id: null,
   },
-  prevUserIds = [null],
+  prevUserIds = [{id: null, prevAssignedDate: null}],
  /*  prevUser = [{
     role: {
       absoluteDeveloper: false,
@@ -125,7 +125,7 @@ export default function attributes({
   }], */
   assignedDate = { at: null, by: null },
   expiryDate = null,
-  prevAssignedDate = [null],
+  //prevAssignedDate = [null],
   startDate = new Date(),
   endDate = new Date(),
   created = { at: null, by: null },
@@ -145,14 +145,14 @@ export default function attributes({
     userIds,
     user,
     prevUserIds,
-    prevUser,
+    //prevUser,
     shopIds,
     shop,
     assignedDate,
     expiryDate,
     startDate,
     endDate,
-    prevAssignedDate,
+    //prevAssignedDate,
     created,
     deleted,
     updated,
@@ -183,15 +183,18 @@ export default function attributes({
     expiryDate,
     startDate,
     endDate,
-    prevAssignedDate,
+    //prevAssignedDate,
   };
 
   const manualUpdatableState = {
     confidential: {
-      ["d.amount"]: amount,
-      ["d.description"]: description,
-      ["d.tnc"]: tnc,
-      ["d.title"]: title,
+      ["amount"]: amount,
+      ["description"]: description,
+      ["tnc"]: tnc,
+      ["title"]: title,
+      ["shopIds"]: shopIds,
+      ["startDate"]: startDate,
+      ["endDate"]: endDate
     },
   };
 
