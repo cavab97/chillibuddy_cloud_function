@@ -29,6 +29,13 @@ export default functions.https.onCall(async (data, context) => {
       reference: referenceData.receivableState,
     });
 
+     //validate
+    if(data.endDate && data.endDate < data.startDate && data.startDate){
+      backendServices.data.unavailable({
+        message: `End date cannot before start date.`,
+      });
+    }
+
     //Data Processing
     const objectData = object.attributes(data).manualUpdatableState;
 
