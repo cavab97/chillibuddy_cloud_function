@@ -15,6 +15,7 @@ import * as covid19Shop from "./covid19Shop";
 import * as bookmark from "./bookmark";
 import * as checkInTicket from "./checkInTicket";
 import * as voucher from "./voucher";
+import * as merchant from "./merchant";
 
 export {
   user,
@@ -34,4 +35,5 @@ export {
   bookmark,
   checkInTicket,
   voucher,
+  merchant
 };
