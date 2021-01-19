@@ -18,7 +18,8 @@ export default functions.https.onCall(async (data, context) => {
 
     //Data Correction
     data = { 
-      ...data
+      ...data,
+      logo: []
     }
 
     //Validate Data
