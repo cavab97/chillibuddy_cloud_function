@@ -1,8 +1,10 @@
 export default function attributes({
   id = null,
-  name = null,
+  businessName = null,
   businessRegistrationNumber = null,
   email = null,
+  logo = [null],
+  images = [null],
   phoneNumber = null,
   address = { 
     line1: null,
@@ -13,7 +15,7 @@ export default function attributes({
   },
   shops = [null],
   superadmin = [null],
-  admins = null,
+  admins = [null],
   categories = [null],
   dateJoined = new Date,
   created = { at: null, by: null },
@@ -22,9 +24,11 @@ export default function attributes({
 }) {
   const packaging = {
     id,
-    name,
+    businessName,
     businessRegistrationNumber,
     email,
+    logo,
+    images,
     phoneNumber,
     address,
     shops,
@@ -47,8 +51,10 @@ export default function attributes({
 
   const receivableState = {
     id,
-    name,
+    businessName,
     businessRegistrationNumber,
+    logo,
+    images,
     email,
     phoneNumber,
     address,
@@ -60,9 +66,11 @@ export default function attributes({
 
   const manualUpdatableState = {
     confidential: {
-      name,
+      businessName,
       businessRegistrationNumber,
       email,
+      logo,
+      images,
       phoneNumber,
       address,
       shops,

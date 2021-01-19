@@ -1,14 +1,15 @@
 import * as functions from "firebase-functions";
 import * as backendServices from "../../z-tools/marslab-library-cloud-function/services/backend";
 import { dataServices as objectDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
-import { voucher as object, shop as subject } from "../../z-tools/system/objectsConfig";
+import { voucher as object, merchant as subject } from "../../z-tools/system/objectsConfig";
 
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
 
 const objectName = "voucher";
-const subjectName = "shop";
+const subjectName = "merchant";
 const event = "Create";
-let objectId = null;
+let objectIds = null;
+let objectQty = null;
 
 export default functions.https.onCall(async (data, context) => {
   try {
@@ -30,25 +31,7 @@ export default functions.https.onCall(async (data, context) => {
       reference: referenceData.receivableState,
     });
 
-    const subjectIds = data.shopIds;
-
-    if (subjectIds.length === 0) {
-      backendServices.data.objectNotExist({ message: "Shop id required." });
-    }
-
-    //Read other object
-    const readShops = objectDataServices.read({
-      objectName: "shop",
-      objectIds: subjectIds,
-    });
-
-    const readPromise = await Promise.all([readShops]);
-
-    const shop = readPromise[0][0];
-
-    if (shop === null) {
-      backendServices.data.objectNotExist({ message: "Shop not exist." });
-    }
+    const subjectIds = data.merchantIds;
 
     //validate
     if(data.endDate && data.endDate < data.startDate && data.startDate){
@@ -57,40 +40,71 @@ export default functions.https.onCall(async (data, context) => {
       });
     }
 
-    //Data Correction
-    data = { ...data, shop:{...shop.d, ...shop }  }
-    delete data.shop["d"]
+    if (subjectIds.length === 0) {
+      backendServices.data.objectNotExist({ message: "Merchant id required." });
+    }
 
-    //Data Processing
-    const objectData = object.attributes(data);
+    //Read other object
+    const readMerchants = objectDataServices.read({
+      objectName: subjectName,
+      objectIds: subjectIds,
+    });
+
+    const readPromise = await Promise.all([readMerchants]);
+
+    const merchant = readPromise[0];
+
+    if (merchant === null) {
+      backendServices.data.objectNotExist({ message: "Merchant not exist." });
+    }
+
+    objectQty = data.quantity;
+    delete data["quantity"];
+
+    //Data Correction
+    data = { 
+      ...data, 
+      merchant: merchant 
+    }
+
+    const objectsArray = [];
+
+    for(let i = 0; i < objectQty; i++){
+      //Data Processing
+      const objectData = object.attributes({...data, [subjectName]:merchant});
+
+      const subjectObjectRelation = subject.relation.merchant.create.voucher.asChild({
+        subjectName,
+        subjectIds,
+      });
+
+      objectsArray.push({ 
+        packaging: objectData.packaging, 
+        shared: objectData.shared, 
+        confidential: objectData.confidential, 
+        subjectObjectRelation,
+      });
+    }
 
     //Output
-    const result = await objectDataServices.create({
-      objectId: data.id,
+    const result = await objectDataServices.createObjectsWithRelation({
       objectName,
-      objectData,
-      createdByUid: uid
+      objectData: objectsArray,
+      createdByUid: uid,
+      relatedParties: [
+        {
+          partyName: subjectName,
+          partyId: subjectIds[0],
+          partyData: merchant,
+        },
+      ],
     });
 
-    objectId = result.objectId;
-
-    const objectIds = [objectId];
-    const subjectObjectRelation = subject.relation.shop.create.voucher.asChild({
-      subjectName,
-      subjectIds,
-    });
-
-    await objectDataServices.createRelation({
-      subjectName,
-      subjectIds,
-      objectName,
-      objectIds,
-      subjectObjectRelation,
-    });
+    objectIds = result.objectIds;
 
     return httpUtils.successResponse({
       objectName,
-      ids: [objectId],
+      ids: [objectIds],
       action: event,
       message: `Created ${objectName} successfully.`,
     });
@@ -102,7 +116,7 @@ export default functions.https.onCall(async (data, context) => {
     httpUtils.failedResponse({
       code: code,
       objectName,
-      ids: [objectId],
+      ids: [objectIds],
       action: event,
       message: message,
     });

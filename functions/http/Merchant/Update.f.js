@@ -1,12 +1,13 @@
 import * as functions from "firebase-functions";
 import * as backendServices from "../../z-tools/marslab-library-cloud-function/services/backend";
 import { dataServices as objectDataServices } from "../../z-tools/marslab-library-cloud-function/services/database";
-import { promotion as object } from "../../z-tools/system/objectsConfig";
+import { merchant as object } from "../../z-tools/system/objectsConfig";
 
 import * as httpUtils from "../../z-tools/marslab-library-cloud-function/utils/http";
 
-const objectName = "promotion";
-const event = "Update";
+const objectName = "merchant";
+const subjectName = "user";
+const event = "Create";
 let objectId = null;
 
 export default functions.https.onCall(async (data, context) => {
@@ -18,8 +19,6 @@ export default functions.https.onCall(async (data, context) => {
     //Data Correction
     data = { 
       ...data,
-      startTime: new Date(data.startTime),
-      endTime: new Date(data.endTime)
     }
 
     //Validate Data
@@ -29,20 +28,57 @@ export default functions.https.onCall(async (data, context) => {
       reference: referenceData.receivableState
     });
 
-    //validation
-    // if(data.endTime < objectDataServices.Time.now()){
-    //   backendServices.data.unavailable({
-    //     message: `End time cannot before current time.`,
-    //   });
-    // }
+    const subjectIds = data.superadmin;
 
-    // if(data.ended.boolean){
-    //   delete data["startTime"];
-    //   delete data["endTime"];
-    // }
+    if(subjectIds.length === 0)
+    {
+      backendServices.data.objectNotExist({
+        message:"User id required."
+      })
+    }
+
+    //Read other object
+    const readUsers = objectDataServices.read({ 
+      objectName: subjectName, 
+      objectIds: subjectIds
+    });
+
+    const readUserExisted = objectDataServices.db
+      .collection(`${objectName}Packaging0/`)
+      .where("superadmin", "array-contains-any", subjectIds)
+      .get()
+
+    const readPromise = await Promise.all([readUsers, readUserExisted])
+
+    const user = readPromise[0];
+    const userSnapshot = readPromise[1];
+
+    //validate
+    if(user === null) {
+      backendServices.data.objectNotExist({
+        message:"User does not exist."
+      })
+    }
+
+    if(!userSnapshot.empty && userSnapshot.length > 1) {
+      backendServices.data.objectNotExist({
+        message:"User is already a superadmin for another merchant."
+      })
+    }
+
+    if(!data.businessName){
+      backendServices.data.unavailable({
+        message: `Business name cannot be empty.`,
+      });
+    }
+
+    //Data Correction
+    data = { 
+      ...data,
+    }
 
     //Data Processing
-    const objectData = object.attributes(data).manualUpdatableState;
+    const objectData = object.attributes(data);
 
     //Output
     const result = await objectDataServices.update({

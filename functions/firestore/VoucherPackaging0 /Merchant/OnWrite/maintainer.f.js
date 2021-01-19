@@ -2,7 +2,7 @@ import * as functions from "firebase-functions";
 import { dataServices as objectDataServices } from "../../../../z-tools/marslab-library-cloud-function/services/database";
 
 const objectName = "voucher";
-const targetName = "shop";
+const targetName = "merchant";
 
 export default functions
   .region("asia-east2")
@@ -28,13 +28,13 @@ export default functions
             return console.log("Function trigger repeatly.");
           }
 
-          let shop = snap.after.data();
-          shop = { ...shop.d, ...shop };
-          delete shop["d"];
+          let merchant = snap.after.data();
+
+          merchant = { ...merchant };
 
           if (snap.before.exists) {
             transaction.update(objectRef, {
-              ["d.shop"]: shop,
+              merchant: merchant,
             });
           }
 
