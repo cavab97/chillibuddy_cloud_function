@@ -54,7 +54,7 @@ export default functions.https.onCall(async (data, context) => {
       updatedByUid: uid,
     }); */
 
-    await Promise.all([createAuth, updateDatabase]);
+    await Promise.all([createAuth]);
 
     return httpUtils.successResponse({
       objectName,
