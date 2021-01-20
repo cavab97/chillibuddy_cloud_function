@@ -21,7 +21,8 @@ export default functions.https.onCall(async (data, context) => {
     data = { 
       ...data,
       startDate: data.startDate ? new Date(data.startDate) : null,
-      endDate: data.endDate ? new Date(data.endDate) : null
+      endDate: data.endDate ? new Date(data.endDate) : null,
+      amount: data.amount ? parseFloat(data.amount) : 0
     }
 
     //Validate Data
@@ -58,13 +59,31 @@ export default functions.https.onCall(async (data, context) => {
       backendServices.data.objectNotExist({ message: "Merchant not exist." });
     }
 
+    if (data.quantity < 1) {
+      backendServices.data.objectNotExist({ message: "Quantity cannot be less than 1." });
+    }
+
     objectQty = data.quantity;
     delete data["quantity"];
+    
+    let active = false;
+
+    if (data.startDate && data.endDate) {
+      if (data.startDate === objectDataServices.Time.now().toDate()){
+        active = true;
+      }
+      if (data.endDate >= objectDataServices.Time.now().toDate()){
+        active = true;
+      }
+    } else {
+      active = true;
+    }
 
     //Data Correction
     data = { 
       ...data, 
-      merchant: merchant 
+      merchant: merchant,
+      active: active
     }
 
     const objectsArray = [];
