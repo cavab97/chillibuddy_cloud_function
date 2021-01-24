@@ -1,8 +1,10 @@
+import { dataServices as objectDataServices } from "../../../marslab-library-cloud-function/services/database";
+
 export default function attributes({
   id = null,
-  numberCheckIn = 0,
-  month = null,
-  year = null,
+  numberCheckIn = 1,
+  lastCheckedIn = null,
+  status = false,
   userIds = [null],
   user = {
     role: {
@@ -49,6 +51,7 @@ export default function attributes({
     claimed: false,
     amount: 0,
     quantity: 1,
+    type: null,
     title: null,
     description: null,
     tnc: null,
@@ -122,6 +125,7 @@ export default function attributes({
     deleted: { at: null, by: null },
     updated: { at: null, by: null },
   },
+  checkInRecord = [{ date: new Date(), claim: false }],
   created = { at: null, by: null },
   deleted = { at: null, by: null },
   updated = { at: null, by: null },
@@ -133,8 +137,9 @@ export default function attributes({
     voucherIds,
     voucher,
     numberCheckIn,
-    month,
-    year,
+    lastCheckedIn,
+    status,
+    checkInRecord,
     created,
     deleted,
     updated,
@@ -151,6 +156,7 @@ export default function attributes({
   const receivableState = {
     id,
     userIds,
+    checkInRecord
   };
 
  /*  const manualUpdatableState = {

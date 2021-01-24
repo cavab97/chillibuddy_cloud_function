@@ -12,14 +12,19 @@ const directObjectName = "user";
 const event = "Create";
 let objectId = null;
 
-const days = 7;
-const maximumCheckIn = 28;
+const days = 21;
+const maximumCheckIn = 30;
 
 export default functions.https.onCall(async (data, context) => {
   try {
     //Validate Permission
     const uid = context.auth.uid;
     await backendServices.permission.identityChecking({ uid });
+
+    //Data Correction
+    data = { 
+      ...data
+    }
 
     //Validate Data
     const referenceData = object.attributes({});
@@ -41,45 +46,51 @@ export default functions.https.onCall(async (data, context) => {
     const readCheckIn = objectDataServices.db
       .collection(`${objectName}Packaging0/`)
       .where("userIds", "array-contains-any", directObjectIds)
-      .where("month", "==", data.month)
-      .where("year", "==", data.year)
-      .orderBy("created.at", "desc")
+      .where("status", "==", true)
       .get()
 
-    const [users, checkInTickets] = await Promise.all([readUsers, readCheckIn]);
+    const readPromise = await Promise.all([readUsers, readCheckIn]);
 
-    const user = users[0]
-    let checkInTicket = checkInTickets[0]
+    const user = readPromise[0]
+    let checkInTicket = readPromise[1]
     const currentDate = new Date()
-    let numberOfCheckIn;
     
     //Object verification
     if (user === null) {
       backendServices.data.objectNotExist({ message: "User not exist." });
     }
 
-    if (checkInTicket) {
-      if (checkInTicket.numberCheckIn >= maximumCheckIn)
-      backendServices.data.objectExhausted({
-        message: "Check In number had exceed monthly maximum value.",
-      });
+    if (checkInTicket === undefined) {
+      backendServices.data.objectExist({ message: "Check In Ticket exist." });
+    }
 
-      if (checkInTicket.createdDate.toDate() === currentDate.toDate()) {
+    /* if (checkInTicket !== undefined || checkInTicket !== null) {
+      if (checkInTicket.numberCheckIn >= maximumCheckIn) {
+        backendServices.data.objectExhausted({
+          message: "Check In number had exceed monthly maximum value.",
+        });
+      }
+
+      if (checkInTicket.lastCheckedIn > currentDate || checkInTicket.lastCheckedIn === currentDate) {
         backendServices.data.objectExhausted({
           message: "Check In has reached daily limit.",
         });
       }
+    }  */
 
-      numberOfCheckIn = checkInTicket.numberCheckIn ?  0 : checkInTicket.numberCheckIn++;
-    }
+    let checkInRecord = [];
+
+    checkInRecord.push({ date: new Date(), claim: false})
 
     //Data Correction
-    checkInTicket = { ...checkInTicket };
+    //checkInTicket = { ...checkInTicket };
     data = { 
       ...data, 
-      numberCheckIn: numberOfCheckIn,
       user, 
-      userIds: directObjectIds 
+      userIds: directObjectIds,
+      status: true,
+      lastCheckedIn: new Date(),
+      checkInRecord: checkInRecord
     };
 
     //Data Processing
@@ -94,7 +105,7 @@ export default functions.https.onCall(async (data, context) => {
     });
 
     objectId = result.objectId;
-
+/* 
     //transaction
     if (checkInTicket.numberCheckIn % days === 0) {
       return await objectDataServices.db.runTransaction(async (transaction) => {
@@ -150,7 +161,7 @@ export default functions.https.onCall(async (data, context) => {
           });
         });
       });
-    }
+    } */
 
     return httpUtils.successResponse({
       objectName,
