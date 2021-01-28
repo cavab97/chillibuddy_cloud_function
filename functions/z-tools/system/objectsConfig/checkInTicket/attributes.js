@@ -3,6 +3,7 @@ import { dataServices as objectDataServices } from "../../../marslab-library-clo
 export default function attributes({
   id = null,
   numberCheckIn = 1,
+  resetDate = null,
   lastCheckedIn = null,
   status = false,
   userIds = [null],
@@ -140,6 +141,7 @@ export default function attributes({
     lastCheckedIn,
     status,
     checkInRecord,
+    resetDate,
     created,
     deleted,
     updated,

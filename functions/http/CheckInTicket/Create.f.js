@@ -45,7 +45,7 @@ export default functions.https.onCall(async (data, context) => {
 
     const readCheckIn = objectDataServices.db
       .collection(`${objectName}Packaging0/`)
-      .where("userIds", "array-contains-any", directObjectIds)
+      .where("userIds", "array-contains", directObjectIds)
       .where("status", "==", true)
       .get()
 
@@ -53,44 +53,33 @@ export default functions.https.onCall(async (data, context) => {
 
     const user = readPromise[0]
     let checkInTicket = readPromise[1]
-    const currentDate = new Date()
+
+    const resetDate = new Date();
+    resetDate.setDate(resetDate.getDate() + maximumCheckIn);
     
     //Object verification
     if (user === null) {
       backendServices.data.objectNotExist({ message: "User not exist." });
     }
 
-    if (checkInTicket === undefined) {
+    /* if (checkInTicket[0] !== undefined) {
       backendServices.data.objectExist({ message: "Check In Ticket exist." });
     }
-
-    /* if (checkInTicket !== undefined || checkInTicket !== null) {
-      if (checkInTicket.numberCheckIn >= maximumCheckIn) {
-        backendServices.data.objectExhausted({
-          message: "Check In number had exceed monthly maximum value.",
-        });
-      }
-
-      if (checkInTicket.lastCheckedIn > currentDate || checkInTicket.lastCheckedIn === currentDate) {
-        backendServices.data.objectExhausted({
-          message: "Check In has reached daily limit.",
-        });
-      }
-    }  */
+ */
 
     let checkInRecord = [];
 
     checkInRecord.push({ date: new Date(), claim: false})
 
     //Data Correction
-    //checkInTicket = { ...checkInTicket };
     data = { 
       ...data, 
       user, 
       userIds: directObjectIds,
       status: true,
       lastCheckedIn: new Date(),
-      checkInRecord: checkInRecord
+      checkInRecord: checkInRecord,
+      resetDate: resetDate
     };
 
     //Data Processing
@@ -105,63 +94,6 @@ export default functions.https.onCall(async (data, context) => {
     });
 
     objectId = result.objectId;
-/* 
-    //transaction
-    if (checkInTicket.numberCheckIn % days === 0) {
-      return await objectDataServices.db.runTransaction(async (transaction) => {
-
-        const readVouchers = objectDataServices.db
-          .collection(`${subjectName}Packaging0/`)
-          .where("active", "==", true)
-          .where("assigned", "==", false)
-          .where("claimed", "==", false)
-          .limit(1)
-          .get()
-  
-        const [vouchers] = await Promise.all([readVouchers]);
-    
-        const voucher = vouchers[0];
-
-        const objectRef = objectDataServices.db.doc(`${objectName}Private0/${objectId}`);
-        const subjectRef = objectDataServices.db.doc(`${subjectName}Private0/${voucher.id}`);
-
-        return transaction.getAll(objectRef, subjectRef).then((docs) => {
-          const objectDoc = docs[0];
-          const subjectDoc = docs[1];
-
-          if (!objectDoc.exists) {
-            throw Object("Object does not exist!");
-          }
-
-          if (!subjectDoc.exists) {
-            return httpUtils.successResponse({
-              objectName,
-              ids: [objectId],
-              action: event,
-              message: `No luck please try next time!`,
-            });
-          }
-          
-          transaction.update(objectRef, {
-            voucherIds: subjectDoc.id,
-            voucher: subjectDoc.voucher,
-            ["updated.at"]: objectDataServices.Time.now(),
-            ["updated.by"]: "System"
-          });
-
-          return transaction.update(subjectRef, {
-            assigned: true,
-            voucherIds: subjectDoc.id,
-            voucher: subjectDoc.voucher,
-            user: objectDoc.user,
-            userIds: objectDoc.userIds,
-            ["assignedDate.at"]: objectDataServices.Time.now(),
-            ["updated.at"]: objectDataServices.Time.now(),
-            ["updated.by"]: "System"
-          });
-        });
-      });
-    } */
 
     return httpUtils.successResponse({
       objectName,
