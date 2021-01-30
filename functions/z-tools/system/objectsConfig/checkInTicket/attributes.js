@@ -158,7 +158,8 @@ export default function attributes({
   const receivableState = {
     id,
     userIds,
-    checkInRecord
+    checkInRecord,
+    voucherIds
   };
 
  /*  const manualUpdatableState = {
