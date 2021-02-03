@@ -78,11 +78,11 @@ export default functions.https.onCall(async (data, context) => {
       }
 
       //Validate date
-      /* if (objectDataServices.Time.now().toDate().getDate() === new Date(checkInTicket[0].lastCheckedIn * 1000).getDate()) {
+      if (objectDataServices.Time.now().toDate().getDate() === new Date(checkInTicket[0].lastCheckedIn * 1000).getDate()) {
         backendServices.data.objectExhausted({
           message: "Check In has reached daily limit.",
         });
-      } */
+      } 
 
     }
     let status = true;
@@ -98,6 +98,7 @@ export default functions.https.onCall(async (data, context) => {
     //Data Correction
     data = { 
       ...data, 
+      resetDate: checkInTicket[0].resetDate,
       user, 
       userIds: directObjectIds,
       status: status,

@@ -13,10 +13,10 @@ export default functions
 
       await objectDataServices.db
         .collection(`${objectName}Private0`)
-        .where("d.endDate", "<=", objectDataServices.Time.now())
-        .where("d.assigned", "==", true)
-        .where("d.active", "==", false)
-        .where("d.usedDate.at", "==", null)
+        .where("expiryDate", "<=", objectDataServices.Time.now())
+        .where("assigned", "==", true)
+        .where("active", "==", true)
+        .where("usedDate.at", "==", null)
         .get()
         .then((expiredVoucher) => {
           expiredVoucher.forEach((voucher) => {
@@ -26,33 +26,30 @@ export default functions
         });
 
       const assigned = false;
-      const active = true;
-      const userIds = [null];
+      const active = false;
+      const userIds = [];
       const user = {};
 
       const writePromise = [];
 
       expiredVoucherIds.forEach((voucherId) => {
         const ref = `${objectName}Private0/${voucherId}`;
-        const prevUserIds = voucherId.d.userIds;
-        const prevUser = voucherId.d.user;
-        const prevAssignedDate = voucherId.d.assignedDate;
+        const prevUserIds = voucherId.userIds;
+        const prevUser = voucherId.user;
+        const prevAssignedDate = voucherId.assignedDate;
         const assignedDate = { at: null, by: null };
         const endDate = new Date();
 
         const update = objectDataServices.db
           .doc(ref)
-          .update(
-            { ["d.assigned"]: assigned },
-            { ["d.active"]: active },
-            { ["d.prevUserIds"]: prevUserIds },
-            { ["d.userIds"]: userIds },
-            { ["d.prevUser"]: prevUser },
-            { ["d.user"]: user },
-            { ["d.prevAssignedDate"]: prevAssignedDate },
-            { ["d.assignedDate"]: assignedDate },
-            { ["d.endDate"]: endDate }
-          );
+          .update({ 
+            ["assigned"]: assigned,
+            ["active"]: active,
+            ["prevUserIds"]: { id: voucherId, prevAssignedDate: prevAssignedDate },
+            ["userIds"]: userIds,
+            ["user"]: user,
+            ["assignedDate"]: assignedDate 
+          });
         writePromise.push(update);
       });
 
