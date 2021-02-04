@@ -16,6 +16,7 @@ import * as bookmark from "./bookmark";
 import * as checkInTicket from "./checkInTicket";
 import * as voucher from "./voucher";
 import * as merchant from "./merchant";
+import * as favourite from "./favourite";
 
 export {
   user,
@@ -35,5 +36,6 @@ export {
   bookmark,
   checkInTicket,
   voucher,
-  merchant
+  merchant,
+  favourite
 };
